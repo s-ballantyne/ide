@@ -11,6 +11,7 @@ class Editor(QPlainTextEdit):
 		super().__init__(parent)
 
 		self.setFont(QFont("DejaVu Sans Mono", 12))
+		self.setLineWrapMode(QPlainTextEdit.NoWrap)
 
 		self.lineNumberArea = LineNumberArea(self)
 		self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0)
