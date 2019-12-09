@@ -5,8 +5,8 @@ from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide2.QtWidgets import QMainWindow, QAction
 
 from .util import centralisedRect
-from .tabbar import TabBar
-from .editor import *
+from .editortabbar import EditorTabBar
+from .editor import Editor
 
 
 class IdeWindow(QMainWindow):
@@ -25,9 +25,8 @@ class IdeWindow(QMainWindow):
 		self.aboutMenu = None
 		self.createActions()
 
-		self.editors = TabBar(self)
-		self.editors.addTab(Editor(self), "Hello")
-		self.editors.addTab(Editor(self), "Hi")
+		self.editors = EditorTabBar(self)
+		self.editors.createEditorIfNotExists()
 
 		self.setCentralWidget(self.editors)
 		self.setWindowTitle(f"IDE <{self.window_id}>" if self.window_id > 1 else "IDE")
@@ -43,6 +42,12 @@ class IdeWindow(QMainWindow):
 		new_action.setShortcut(QKeySequence.New)
 		new_action.triggered.connect(self.newFile)
 		self.fileMenu.addAction(new_action)
+
+		close_action = QAction("Close", self.fileMenu)
+		close_action.setStatusTip("Closes current editor tab")
+		close_action.setShortcut(QKeySequence.Close)
+		close_action.triggered.connect(self.closeFile)
+		self.fileMenu.addAction(close_action)
 
 		open_action = QAction("Open", self.fileMenu)
 		open_action.setStatusTip("Open a file")
@@ -90,7 +95,12 @@ class IdeWindow(QMainWindow):
 		self.aboutMenu.addAction(about_qt_action)
 
 	def newFile(self):
-		pass
+		self.logger.debug("New file requested.")
+		self.editors.createEditor()
+
+	def closeFile(self):
+		self.logger.debug("Close active editor requested.")
+		self.editors.closeActiveEditor()
 
 	def openFile(self):
 		pass
