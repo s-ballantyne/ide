@@ -1,0 +1,13 @@
+# PyCharm
+.idea
+
+# Log files
+*.log
+*.log.*
+
+# Bytecode, etc
+*.py[cod]
+__pycache__/
+
+# Virtual environment
+venv/
