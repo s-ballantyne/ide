@@ -6,7 +6,6 @@ from PySide2.QtWidgets import QMainWindow, QAction
 
 from .util import centralisedRect
 from .editortabbar import EditorTabBar
-from .editor import Editor
 
 
 class IdeWindow(QMainWindow):
