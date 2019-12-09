@@ -1,5 +1,5 @@
 
-Unfinished attempt at a text editor
+Text editor \
 Currently doesn't do anything.
 
 ## Icon set
