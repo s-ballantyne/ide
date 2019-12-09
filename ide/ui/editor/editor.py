@@ -1,8 +1,9 @@
 from PySide2.QtCore import QRect
-from PySide2.QtGui import QFont, QResizeEvent
-from PySide2.QtWidgets import QPlainTextEdit
+from PySide2.QtGui import QFont, QResizeEvent, QTextFormat
+from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from .linenumberarea import LineNumberArea
+from ..colours import OuterSpace
 
 
 class Editor(QPlainTextEdit):
@@ -16,9 +17,28 @@ class Editor(QPlainTextEdit):
 
 		self.blockCountChanged.connect(lambda: self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0))
 		self.updateRequest.connect(self.updateLineNumberArea)
+		self.cursorPositionChanged.connect(self.highlightCurrentLine)
+
+		self.highlightCurrentLine()
+		self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0)
 
 	def setIndentationWidth(self, n_spaces: int):
 		self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * n_spaces)
+
+	def highlightCurrentLine(self):
+		selections = []
+
+		if not self.isReadOnly():
+			selection = QTextEdit.ExtraSelection()
+
+			selection.format.setBackground(OuterSpace.lighter(160))
+			selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+			selection.cursor = self.textCursor()
+			selection.cursor.clearSelection()
+
+			selections.append(selection)
+
+		self.setExtraSelections(selections)
 
 	def resizeEvent(self, event: QResizeEvent):
 		super().resizeEvent(event)

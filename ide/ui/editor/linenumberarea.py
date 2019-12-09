@@ -4,15 +4,15 @@ from math import log10
 from PySide2.QtWidgets import QWidget, QPlainTextEdit
 from PySide2.QtCore import QSize, Qt
 
-from ..colours import Black, White
+from ..colours import WhiteSmoke, OuterSpace
 
 
 class LineNumberArea(QWidget):
 	def __init__(self, parent: QPlainTextEdit):
 		super().__init__(parent)
 
-		self.backgroundColour = Black
-		self.numberColour = White
+		self.backgroundColour = OuterSpace
+		self.numberColour = WhiteSmoke
 		self.numberAlignment = Qt.AlignCenter
 
 	def numberWidth(self):

@@ -149,4 +149,6 @@ WhiteSmoke = QColor.fromRgb(245, 245, 245)
 Yellow = QColor.fromRgb(255, 255, 0)
 YellowGreen = QColor.fromRgb(154, 205, 50)
 
+OuterSpace = QColor.fromRgb(49, 54, 59)
+
 colours = {k: v for k, v in vars().items() if isinstance(v, QColor)}
