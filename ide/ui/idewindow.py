@@ -5,6 +5,8 @@ from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide2.QtWidgets import QMainWindow, QAction
 
 from .util import centralisedRect
+from .tabbar import TabBar
+from .editor import *
 
 
 class IdeWindow(QMainWindow):
@@ -23,6 +25,11 @@ class IdeWindow(QMainWindow):
 		self.aboutMenu = None
 		self.createActions()
 
+		self.editors = TabBar(self)
+		self.editors.addTab(Editor(self), "Hello")
+		self.editors.addTab(Editor(self), "Hi")
+
+		self.setCentralWidget(self.editors)
 		self.setWindowTitle(f"IDE <{self.window_id}>" if self.window_id > 1 else "IDE")
 		self.setWindowIcon(QIcon("icons/script_edit.png"))
 

@@ -2,12 +2,18 @@ from PySide2.QtGui import QPainter
 from math import log10
 
 from PySide2.QtWidgets import QWidget, QPlainTextEdit
-from PySide2.QtCore import QSize
+from PySide2.QtCore import QSize, Qt
+
+from ..colours import Black, White
 
 
 class LineNumberArea(QWidget):
 	def __init__(self, parent: QPlainTextEdit):
 		super().__init__(parent)
+
+		self.backgroundColour = Black
+		self.numberColour = White
+		self.numberAlignment = Qt.AlignCenter
 
 	def numberWidth(self):
 		block_count = self.parent().blockCount()
@@ -18,10 +24,6 @@ class LineNumberArea(QWidget):
 		return QSize(self.numberWidth(), 0)
 
 	def paintEvent(self, event):
-		background_colour = None
-		number_colour = None
-		number_alignment = None
-
 		width = self.width()
 		font_height = self.fontMetrics().height()
 
@@ -35,7 +37,7 @@ class LineNumberArea(QWidget):
 		painter = QPainter(self)
 
 		# Background
-		painter.fillRect(event_rect, background_colour)
+		painter.fillRect(event_rect, self.backgroundColour)
 
 		# Line numbers
 		block = text_edit.firstVisibleBlock()
@@ -44,10 +46,10 @@ class LineNumberArea(QWidget):
 		top = int(text_edit.blockBoundingGeometry(block).translated(text_edit.contentOffset()).top())
 		bottom = top + int(text_edit.blockBoundingRect(block).height())
 
+		painter.setPen(self.numberColour)
 		while block.isValid() and top <= event_rect_bottom:
 			if block.isVisible() and bottom >= event_rect_top:
-				painter.setPen(number_colour)
-				painter.drawText(0, top, width, font_height, number_alignment, str(block_number + 1))
+				painter.drawText(0, top, width, font_height, self.numberAlignment, str(block_number + 1))
 
 			block = block.next()
 			top = bottom
