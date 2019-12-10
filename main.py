@@ -56,7 +56,7 @@ if __name__ == "__main__":
 	if code == 0:
 		logger.debug("Main application loop exited successfully.")
 	else:
-		logger.warn(f"Main application loop exited with non-zero exit code ({code})!")
+		logger.warning(f"Main application loop exited with non-zero exit code ({code})!")
 
 	sys.exit(code)
 else:
