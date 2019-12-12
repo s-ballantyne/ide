@@ -5,7 +5,7 @@ from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence
 from PySide2.QtWidgets import QMainWindow, QAction
 
 from .util import centralisedRect
-from .editortabbar import EditorTabBar
+from .maintabbar import MainTabBar
 
 
 class IdeWindow(QMainWindow):
@@ -24,7 +24,7 @@ class IdeWindow(QMainWindow):
 		self.aboutMenu = None
 		self.createActions()
 
-		self.editors = EditorTabBar(self)
+		self.editors = MainTabBar(self)
 		self.editors.createEditorIfNotExists()
 
 		self.setCentralWidget(self.editors)
