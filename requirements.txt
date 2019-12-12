@@ -1,2 +1,2 @@
-coloredlogs
+qdarkstyle
 PySide2

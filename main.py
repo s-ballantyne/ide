@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import sys
 import pathlib
 import argparse
@@ -24,6 +25,7 @@ def setup_logger(log, log_level):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-v", "--verbose", action="store_true", default=False, help="Sets log level to debug")
+	parser.add_argument("-d", "--dark", action="store_true", default=True, help="Toggles dark style.")
 	parser.add_argument("files", nargs="*")
 
 	args = parser.parse_args()
@@ -32,8 +34,23 @@ if __name__ == "__main__":
 	logger = logging.getLogger("ide")
 	setup_logger(logger, logging.DEBUG if args.verbose else logging.INFO)
 
+	os.environ["QT_API"] = "PySide2"
+
 	# Application
 	app = QApplication(sys.argv)
+
+	# Theme
+	if args.dark:
+		try:
+			import qdarkstyle
+		except ImportError as e:
+			qdarkstyle = False
+
+			logger.warning("Failed to import dark theme (QDarkStyle).")
+			logger.warning(e)
+
+		if qdarkstyle:
+			app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 	# Create main IDE window
 	ide_window = IdeWindow()
