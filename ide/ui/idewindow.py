@@ -47,7 +47,7 @@ class IdeWindow(QMainWindow):
 		self.fileMenu.addAction(new_action)
 
 		close_action = QAction("Close", self.fileMenu)
-		close_action.setStatusTip("Closes current editor tab")
+		close_action.setStatusTip("Closes current codeeditor tab")
 		close_action.setShortcut(QKeySequence.Close)
 		close_action.triggered.connect(self.closeFile)
 		self.fileMenu.addAction(close_action)

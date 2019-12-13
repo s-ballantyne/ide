@@ -56,7 +56,7 @@ if __name__ == "__main__":
 	ide_window = IdeWindow()
 	ide_window.show()
 
-	# Check command line for paths to load into the editor
+	# Check command line for paths to load into the codeeditor
 	for file_name in args.files:
 		path = pathlib.Path(file_name)
 		ide_window.openFile(path)

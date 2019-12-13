@@ -1,7 +1,7 @@
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QTabWidget
 
-from .editor import Editor
+from .codeeditor import Editor
 from .imageviewer import ImageViewer
 
 
