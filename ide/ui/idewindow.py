@@ -4,8 +4,10 @@ from pathlib import Path
 import requests
 
 from PySide2.QtCore import qApp
-from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence, QImageReader, QPixmap
+from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence, QPixmap
 from PySide2.QtWidgets import QMainWindow, QAction, QFileDialog, QInputDialog, QLineEdit
+
+from ide.io import is_binary_string
 
 from .util import centralisedRect
 from .maintabbar import MainTabBar
@@ -113,10 +115,20 @@ class IdeWindow(QMainWindow):
 			if path.suffix and path.suffix.lower()[1:] in supportedImageFormats:
 				self.tabs.setCurrentWidget(self.tabs.createImageViewer(QPixmap(str(path)), path.name))
 			else:
-				with path.open() as f:
-					editor = self.tabs.createEditor(path.name)
-					editor.setPlainText(f.read())
-					self.tabs.setCurrentWidget(editor)
+				with path.open("rb") as f:
+					is_binary = is_binary_string(f.read(1024))
+
+					if is_binary:
+						f.seek(0)
+
+						# todo: implement hex editor
+						self.logger.error(f"File '{path}' appears to be binary.")
+
+				if not is_binary:
+					with path.open() as f:
+						editor = self.tabs.createEditor(path.name)
+						editor.setPlainText(f.read())
+						self.tabs.setCurrentWidget(editor)
 		else:
 			self.logger.error(f"Attempted to open non-file at '{path}'.")
 
