@@ -4,11 +4,12 @@ from pathlib import Path
 import requests
 
 from PySide2.QtCore import qApp
-from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence
+from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence, QImageReader, QPixmap
 from PySide2.QtWidgets import QMainWindow, QAction, QFileDialog, QInputDialog, QLineEdit
 
 from .util import centralisedRect
 from .maintabbar import MainTabBar
+from .imageviewer import supportedImageFormats
 
 
 class IdeWindow(QMainWindow):
@@ -109,11 +110,13 @@ class IdeWindow(QMainWindow):
 		self.logger.debug(f"Attempting to open file at '{path}'...")
 
 		if path.is_file():
-			with path.open() as f:
-				editor = self.tabs.createEditor(path.name)
-				editor.setPlainText(f.read())
-
-				self.tabs.setCurrentWidget(editor)
+			if path.suffix and path.suffix.lower()[1:] in supportedImageFormats:
+				self.tabs.setCurrentWidget(self.tabs.createImageViewer(QPixmap(str(path)), path.name))
+			else:
+				with path.open() as f:
+					editor = self.tabs.createEditor(path.name)
+					editor.setPlainText(f.read())
+					self.tabs.setCurrentWidget(editor)
 		else:
 			self.logger.error(f"Attempted to open non-file at '{path}'.")
 

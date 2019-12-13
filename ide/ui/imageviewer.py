@@ -1,5 +1,8 @@
-from PySide2.QtGui import QPixmap, Qt
+from PySide2.QtGui import QPixmap, Qt, QImageReader
 from PySide2.QtWidgets import QLabel
+
+
+supportedImageFormats = [f.data().decode("utf-8") for f in QImageReader.supportedImageFormats()]
 
 
 class ImageViewer(QLabel):
