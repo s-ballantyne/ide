@@ -7,14 +7,14 @@ from ..colours import OuterSpace
 
 
 class Editor(QPlainTextEdit):
-	def __init__(self, parent = None):
+	def __init__(self, parent=None):
 		super().__init__(parent)
 
 		self.setFont(QFont("DejaVu Sans Mono", 12))
 		self.setLineWrapMode(QPlainTextEdit.NoWrap)
+		self.setIndentationWidth(4)
 
 		self.lineNumberArea = LineNumberArea(self)
-		self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0)
 
 		self.blockCountChanged.connect(lambda: self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0))
 		self.updateRequest.connect(self.updateLineNumberArea)

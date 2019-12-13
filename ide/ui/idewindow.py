@@ -1,8 +1,11 @@
 import logging
+from pathlib import Path
+
+import requests
 
 from PySide2.QtCore import qApp
 from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence
-from PySide2.QtWidgets import QMainWindow, QAction
+from PySide2.QtWidgets import QMainWindow, QAction, QFileDialog, QInputDialog, QLineEdit
 
 from .util import centralisedRect
 from .maintabbar import MainTabBar
@@ -24,10 +27,10 @@ class IdeWindow(QMainWindow):
 		self.aboutMenu = None
 		self.createActions()
 
-		self.editors = MainTabBar(self)
-		self.editors.createEditorIfNotExists()
+		self.tabs = MainTabBar(self)
+		self.tabs.createEditorIfNotExists()
 
-		self.setCentralWidget(self.editors)
+		self.setCentralWidget(self.tabs)
 		self.setWindowTitle(f"IDE <{self.window_id}>" if self.window_id > 1 else "IDE")
 		self.setWindowIcon(QIcon("icons/script_edit.png"))
 
@@ -51,12 +54,12 @@ class IdeWindow(QMainWindow):
 		open_action = QAction("Open", self.fileMenu)
 		open_action.setStatusTip("Open a file")
 		open_action.setShortcut(QKeySequence.Open)
-		open_action.triggered.connect(self.openFile)
+		open_action.triggered.connect(self.openFileWithDialog)
 		self.fileMenu.addAction(open_action)
 
 		open_from_url_action = QAction("Open from URL", self.fileMenu)
 		open_from_url_action.setStatusTip("Open a file from a URL")
-		open_from_url_action.triggered.connect(self.openFileFromUrl)
+		open_from_url_action.triggered.connect(self.openFileFromUrlWithDialog)
 		self.fileMenu.addAction(open_from_url_action)
 
 		self.fileMenu.addSeparator()
@@ -70,7 +73,7 @@ class IdeWindow(QMainWindow):
 		save_as_action = QAction("Save as", self.fileMenu)
 		save_as_action.setStatusTip("Save a file somewhere else")
 		save_as_action.setShortcut(QKeySequence.SaveAs)
-		save_as_action.triggered.connect(self.saveFileAs)
+		save_as_action.triggered.connect(self.saveFileAsWithDialog)
 		self.fileMenu.addAction(save_as_action)
 
 		save_all_action = QAction("Save all", self.fileMenu)
@@ -95,17 +98,74 @@ class IdeWindow(QMainWindow):
 
 	def newFile(self):
 		self.logger.debug("New file requested.")
-		self.editors.createEditor()
+		self.tabs.createEditor()
 
 	def closeFile(self):
-		self.logger.debug("Close active editor requested.")
-		self.editors.closeActiveEditor()
+		self.logger.debug("Close active tab requested.")
+		self.tabs.closeActiveTab()
 
-	def openFile(self):
-		pass
+	def openFile(self, path: str):
+		path = Path(path)
+		self.logger.debug(f"Attempting to open file at '{path}'...")
 
-	def openFileFromUrl(self):
-		pass
+		if path.is_file():
+			with path.open() as f:
+				editor = self.tabs.createEditor(path.name)
+				editor.setPlainText(f.read())
+
+				self.tabs.setCurrentWidget(editor)
+		else:
+			self.logger.error(f"Attempted to open non-file at '{path}'.")
+
+	def openFileWithDialog(self):
+		self.logger.debug("Opening file dialog...")
+
+		dialog = QFileDialog(self)
+		dialog.setFileMode(QFileDialog.AnyFile)
+		dialog.setViewMode(QFileDialog.Detail)
+
+		if dialog.exec():
+			for file in dialog.selectedFiles():
+				self.openFile(file)
+
+	def openFileFromUrl(self, url: str):
+		self.logger.debug(f"Attempting to open URL at '{url}'...")
+
+		try:
+			r = requests.get(url)
+
+			self.logger.info(f"Request to '{url}': got response, status: {r.status_code}, time taken: {r.elapsed}.")
+			self.logger.debug(f"Response headers: {r.headers}")
+		except ConnectionError as e:
+			self.logger.warning(f"Request to '{url}': connection failed.")
+			self.logger.warning(e)
+		except TimeoutError as e:
+			self.logger.warning(f"Request to '{url}': timed out.")
+			self.logger.warning(e)
+
+		if r.status_code == requests.codes.ok:
+			editor = self.tabs.createEditor(url.rsplit("/", 1)[-1] + " (URL)")
+			editor.setPlainText(r.text)
+
+			self.tabs.setCurrentWidget(editor)
+		else:
+			self.logger.error(f"Request to '{url}': received non-ok status code {r.status_code}.")
+
+	def openFileFromUrlWithDialog(self):
+		text =\
+		"""
+		Use raw URLs only.
+		
+		Some useful URLs:
+		 - https://pastebin.com/raw/<id>
+		 - https://raw.githubusercontent.com/<user>/<repo>/master/<path>
+		"""
+
+		self.logger.debug("Opening URL dialog...")
+		text, ok = QInputDialog.getText(self, "Open a URL", text, QLineEdit.Normal, "https://raw.githubusercontent.com/<user>/<repo>/master/<file>")
+
+		if ok and text:
+			self.openFileFromUrl(text)
 
 	def saveFile(self):
 		pass
@@ -114,6 +174,9 @@ class IdeWindow(QMainWindow):
 		pass
 
 	def saveFileAs(self):
+		pass
+
+	def saveFileAsWithDialog(self):
 		pass
 
 	def closeEvent(self, event: QCloseEvent):

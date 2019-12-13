@@ -59,12 +59,7 @@ if __name__ == "__main__":
 	# Check command line for paths to load into the editor
 	for file_name in args.files:
 		path = pathlib.Path(file_name)
-		if not path.exists():
-			pass
-		elif path.is_file():
-			pass
-		elif path.is_dir():
-			pass
+		ide_window.openFile(path)
 
 	# Application loop
 	logger.debug("Entering main application loop..")

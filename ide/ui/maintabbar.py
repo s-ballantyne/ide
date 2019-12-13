@@ -17,7 +17,7 @@ class MainTabBar(QTabWidget):
 
 	def createEditorIfNotExists(self):
 		if self.count() < 1:
-			self.createEditor()
+			return self.createEditor()
 
 	def createTab(self, widget, name: str = "", index: int = -1, icon: QIcon = None):
 		if not name:
@@ -32,11 +32,13 @@ class MainTabBar(QTabWidget):
 		if self.parent().logger:
 			self.parent().logger.debug(f"Created new tab at {index} ('{name}').")
 
+		return widget
+
 	def createEditor(self, name: str = "", index: int = -1):
-		self.createTab(Editor(self), name, index, self.editorIcon)
+		return self.createTab(Editor(self), name, index, self.editorIcon)
 
 	def createImageViewer(self, pixmap: QPixmap, name: str = "", index: int = -1):
-		self.createTab(ImageViewer(pixmap, self), name, index, self.imageIcon)
+		return self.createTab(ImageViewer(pixmap, self), name, index, self.imageIcon)
 
 	def activeTab(self):
 		return self.currentWidget()
