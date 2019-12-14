@@ -1,13 +1,19 @@
+import logging
+
 from PySide2.QtGui import QIcon, QPixmap
 from PySide2.QtWidgets import QTabWidget
 
-from .codeeditor import Editor
+from .codeeditor import CodeEditor
 from .imageviewer import ImageViewer
+
+from .documents import Document, TextDocument, ImageDocument
 
 
 class MainTabBar(QTabWidget):
 	def __init__(self, parent):
 		super().__init__(parent)
+
+		self.logger = logging.getLogger(f"{__name__}<{str(self.parent() and self.parent().window_id or -1)}>")
 
 		self.editorIcon = QIcon("icons/script_edit.png")
 		self.imageIcon = QIcon("icons/image.png")
@@ -29,16 +35,15 @@ class MainTabBar(QTabWidget):
 		else:
 			self.insertTab(index, widget, icon, name)
 
-		if self.parent().logger:
-			self.parent().logger.debug(f"Created new tab at {index} ('{name}').")
+		self.logger.debug(f"Created new tab at {index} ('{name}').")
 
 		return widget
 
 	def createEditor(self, name: str = "", index: int = -1):
-		return self.createTab(Editor(self), name, index, self.editorIcon)
+		return self.createTab(CodeEditor(self), name, index, self.editorIcon)
 
-	def createImageViewer(self, pixmap: QPixmap, name: str = "", index: int = -1):
-		return self.createTab(ImageViewer(pixmap, self), name, index, self.imageIcon)
+	def createImageViewer(self, name: str = "", index: int = -1):
+		return self.createTab(ImageViewer(self), name, index, self.imageIcon)
 
 	def activeTab(self):
 		return self.currentWidget()
@@ -47,8 +52,22 @@ class MainTabBar(QTabWidget):
 		self.closeTab(self.currentIndex())
 
 	def closeTab(self, index: int):
-		if self.parent().logger:
-			self.parent().logger.debug(f"Closing tab at index {index} ('{self.tabText(index)}').")
+		self.logger.debug(f"Closing tab at index {index} ('{self.tabText(index)}').")
 
 		self.removeTab(index)
 		self.createEditorIfNotExists()
+
+	def openDocument(self, document):
+		if isinstance(document, TextDocument):
+			# todo: move: document.hasPath() and document.path().name or "???"
+			editor = self.createEditor(document.path().name if document.hasPath() else "???")
+			editor.setDocument(document)
+
+			self.setCurrentWidget(editor)
+		elif isinstance(document, ImageDocument):
+			viewer = self.createImageViewer(document.path().name if document.hasPath() else "???")
+			viewer.setDocument(document)
+
+			self.setCurrentWidget(viewer)
+		else:
+			self.logger.error(f"Unable to open unsupported document type '{document.name}'.")

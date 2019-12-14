@@ -4,13 +4,16 @@ from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from .linenumberarea import LineNumberArea
 from ..colours import OuterSpace
+from ..documents import CodeDocument
 
 
-class Editor(QPlainTextEdit):
+class CodeEditor(QPlainTextEdit):
 	def __init__(self, parent=None):
 		super().__init__(parent)
 
-		self.setFont(QFont("DejaVu Sans Mono", 12))
+		self._document = CodeDocument()
+
+		self.setFont(QFont("Source Code Pro", 12))
 		self.setLineWrapMode(QPlainTextEdit.NoWrap)
 		self.setIndentationWidth(4)
 
@@ -22,6 +25,14 @@ class Editor(QPlainTextEdit):
 
 		self.highlightCurrentLine()
 		self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0)
+
+	def document(self):
+		return self._document
+
+	def setDocument(self, document: CodeDocument):
+		self._document = document
+		super().setDocument(document.document())
+		super().setPlainText(document.document().toPlainText())
 
 	def setIndentationWidth(self, n_spaces: int):
 		self.setTabStopDistance(self.fontMetrics().horizontalAdvance(" ") * n_spaces)
@@ -57,4 +68,3 @@ class Editor(QPlainTextEdit):
 
 		if rect.contains(self.viewport().rect()):
 			self.setViewportMargins(self.lineNumberArea.numberWidth(), 0, 0, 0)
-

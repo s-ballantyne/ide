@@ -11,7 +11,11 @@ from ide.io import is_binary_string
 
 from .util import centralisedRect
 from .maintabbar import MainTabBar
-from .imageviewer import supportedImageFormats
+
+from .documents import Document, TextDocument, CodeDocument, ImageDocument, BinaryDocument
+
+from .imageviewer import ImageViewer
+from .codeeditor import CodeEditor
 
 
 class IdeWindow(QMainWindow):
@@ -23,7 +27,7 @@ class IdeWindow(QMainWindow):
 		self.window_id = self.next_window_id
 		self.next_window_id += 1
 
-		self.logger = logging.getLogger(f"ide.IdeWindow<{self.window_id}>")
+		self.logger = logging.getLogger(f"{__name__}<{self.window_id}>")
 		self.logger.debug("Window created.")
 
 		self.fileMenu = None
@@ -64,6 +68,13 @@ class IdeWindow(QMainWindow):
 		open_from_url_action.setStatusTip("Open a file from a URL")
 		open_from_url_action.triggered.connect(self.openFileFromUrlWithDialog)
 		self.fileMenu.addAction(open_from_url_action)
+
+		self.fileMenu.addSeparator()
+
+		rename_action = QAction("Rename", self.fileMenu)
+		rename_action.setStatusTip("Rename currently open file")
+		rename_action.triggered.connect(self.renameFileWithDialog)
+		self.fileMenu.addAction(rename_action)
 
 		self.fileMenu.addSeparator()
 
@@ -112,23 +123,24 @@ class IdeWindow(QMainWindow):
 		self.logger.debug(f"Attempting to open file at '{path}'...")
 
 		if path.is_file():
-			if path.suffix and path.suffix.lower()[1:] in supportedImageFormats:
-				self.tabs.setCurrentWidget(self.tabs.createImageViewer(QPixmap(str(path)), path.name))
-			else:
+			document_class = Document.detectTypeFromName(path.name)
+			if not document_class:
+				self.logger.warning(f"Failed to recognise file type from name for '{path}', checking contents...")
+
 				with path.open("rb") as f:
-					is_binary = is_binary_string(f.read(1024))
+					document_class = Document.detectTypeFromSample(f.read(1024))
 
-					if is_binary:
-						f.seek(0)
+			# todo: mimetypes
 
-						# todo: implement hex editor
-						self.logger.error(f"File '{path}' appears to be binary.")
+			if not document_class:
+				self.logger.error(f"Could not recognise file type for '{path}'.")
+			else:
+				self.logger.debug(f"File at '{path}' appears to have type '{document_class.name}'.")
 
-				if not is_binary:
-					with path.open() as f:
-						editor = self.tabs.createEditor(path.name)
-						editor.setPlainText(f.read())
-						self.tabs.setCurrentWidget(editor)
+				document = document_class(path)
+				document.reload()
+				self.tabs.openDocument(document)
+
 		else:
 			self.logger.error(f"Attempted to open non-file at '{path}'.")
 
@@ -182,11 +194,23 @@ class IdeWindow(QMainWindow):
 		if ok and text:
 			self.openFileFromUrl(text)
 
-	def saveFile(self):
+	def renameFile(self, name: str):
 		pass
 
-	def saveAllFiles(self):
+	def renameFileWithDialog(self):
 		pass
+
+	def saveFile(self):
+		self.logger.debug("Attempting to save current tab...")
+
+		if self.tabs.activeTab() is CodeEditor:
+			self.tabs.activeTab().document().save()
+
+	def saveAllFiles(self):
+		for i in range(self.tabs.count()):
+			tab = self.tabs.widget(i)
+			if tab is CodeEditor:
+				tab.document().save()
 
 	def saveFileAs(self):
 		pass

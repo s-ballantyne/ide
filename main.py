@@ -7,8 +7,6 @@ import logging
 
 from PySide2.QtWidgets import QApplication
 
-from ide.ui import IdeWindow
-
 
 def setup_logger(log, log_level):
 	formatter = logging.Formatter(
@@ -53,10 +51,13 @@ if __name__ == "__main__":
 			app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 	# Create main IDE window
+	# Need to import here so the logger works
+	from ide.ui import IdeWindow
+
 	ide_window = IdeWindow()
 	ide_window.show()
 
-	# Check command line for paths to load into the codeeditor
+	# Check command line for paths to load
 	for file_name in args.files:
 		path = pathlib.Path(file_name)
 		ide_window.openFile(path)

@@ -1,1 +1,1 @@
-from .imageviewer import supportedImageFormats, ImageViewer
+from .imageviewer import ImageViewer

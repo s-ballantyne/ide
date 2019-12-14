@@ -1,1 +1,1 @@
-from .codeeditor import Editor
+from .codeeditor import CodeEditor
