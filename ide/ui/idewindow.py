@@ -3,16 +3,17 @@ from pathlib import Path
 
 import requests
 
-from PySide2.QtCore import qApp
 from PySide2.QtGui import QCloseEvent, QIcon, QKeySequence, QPixmap
-from PySide2.QtWidgets import QMainWindow, QAction, QFileDialog, QInputDialog, QLineEdit
+from PySide2.QtWidgets import QMainWindow, QAction, QFileDialog
+from PySide2.QtWidgets import QInputDialog, QLineEdit, QApplication
 
 from ide.io import is_binary_string
 
 from .util import centralisedRect
 from .maintabbar import MainTabBar
 
-from .documents import Document, TextDocument, CodeDocument, ImageDocument, BinaryDocument
+from .documents import Document, TextDocument
+from .documents import CodeDocument, ImageDocument, BinaryDocument
 
 from .imageviewer import ImageViewer
 from .codeeditor import CodeEditor
